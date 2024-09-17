@@ -1,18 +1,24 @@
 package app.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
-import app.config.MYSQLConnection;
 import app.dao.interfaces.UserDao;
 import app.dao.repository.UserRepository;
 import app.dto.UserDto;
 import app.helpers.Helper;
-import app.model.Person;
 import app.model.User;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@Service
 public class UserDaoImplementation implements UserDao {
 
+    @Autowired
     UserRepository userRepository;
 
     @Override
