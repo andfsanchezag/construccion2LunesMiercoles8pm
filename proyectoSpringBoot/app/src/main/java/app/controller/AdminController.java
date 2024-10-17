@@ -1,5 +1,6 @@
 package app.controller;
 
+import app.controller.request.CreateUserRequest;
 import app.controller.validator.PersonValidator;
 import app.controller.validator.UserValidator;
 import app.dto.PersonDto;
@@ -9,10 +10,16 @@ import app.service.interfaces.AdminService;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.coyote.http11.Http11InputBuffer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @Setter
 @Getter
 @NoArgsConstructor
@@ -28,72 +35,39 @@ public class AdminController implements ControllerInterface {
 
     @Override
     public void session() throws Exception {
-        boolean session = true;
-        while (session) {
-            session = menu();
-        }
-
     }
 
-    private boolean menu() {
+    @GetMapping("/")
+    public String vive() {
+        return " esta vivo";
+    }
+
+    @PostMapping("/veterinarian")
+    private ResponseEntity createVeterinarian(@RequestBody CreateUserRequest request) throws Exception {
         try {
-            System.out.println("bienvenido " + VeterinaryService.user.getUserName());
-            System.out.print(MENU);
-            String option = Utils.getReader().nextLine();
-            return options(option);
-
+            String name = request.getName();
+            personValidator.validName(name);
+            long document = personValidator.validDocument(request.getDocument());
+            int age = personValidator.validAge(request.getAge());
+            String userName = request.getUserName();
+            userValidator.validUserName(userName);
+            String password = request.getPassword();
+            userValidator.validPassword(password);
+            PersonDto personDto = new PersonDto();
+            personDto.setName(name);
+            personDto.setDocument(document);
+            personDto.setAge(age);
+            UserDto userDto = new UserDto();
+            userDto.setPersonid(personDto);
+            userDto.setUserName(userName);
+            userDto.setPassword(password);
+            userDto.setRole("veterinarian");
+            this.service.createVeterinarian(userDto);
+            System.out.println("se ha creado el usuario exitosamente");
+            return new ResponseEntity<>("se ha creado el usuario exitosamente",HttpStatus.OK);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return true;
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
-    }
-
-    private boolean options(String option) throws Exception {
-        switch (option) {
-            case "1": {
-                this.createVeterinarian();
-                return true;
-            }
-            case "2": {
-                this.createSeller();
-                return true;
-            }
-            case "3": {
-                System.out.println("se ha cerrado sesion");
-                return false;
-            }
-            default: {
-                System.out.println("ingrese una opcion valida");
-                return true;
-            }
-        }
-    }
-
-    private void createVeterinarian() throws Exception {
-        System.out.println("ingrese el nombre del veterinario");
-        String name = Utils.getReader().nextLine();
-        personValidator.validName(name);
-        System.out.println("ingrese la cedula del veterinario");
-        long document = personValidator.validDocument(Utils.getReader().nextLine());
-        System.out.println("ingrese la edad del veterinario");
-        int age = personValidator.validAge(Utils.getReader().nextLine());
-        System.out.println("ingrese el nombre de usuario del veterinario");
-        String userName = Utils.getReader().nextLine();
-        userValidator.validUserName(userName);
-        System.out.println("ingrese la contraseña del veterinario");
-        String password = Utils.getReader().nextLine();
-        userValidator.validPassword(password);
-        PersonDto personDto = new PersonDto();
-        personDto.setName(name);
-        personDto.setDocument(document);
-        personDto.setAge(age);
-        UserDto userDto = new UserDto();
-        userDto.setPersonid(personDto);
-        userDto.setUserName(userName);
-        userDto.setPassword(password);
-        userDto.setRole("veterinarian");
-        this.service.createVeterinarian(userDto);
-        System.out.println("se ha creado el usuario exitosamente");
     }
 
     private void createSeller() throws Exception {
